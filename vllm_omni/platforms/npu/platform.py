@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
 
+from collections.abc import Callable
 from contextlib import nullcontext
 from typing import Any
 
@@ -169,6 +170,76 @@ class NPUOmniPlatform(OmniPlatform, NPUPlatform):
     @classmethod
     def supports_torch_inductor(cls) -> bool:
         return False
+
+    @classmethod
+    def get_diffusion_compile_backend(cls, od_config: Any) -> Callable | None:
+        if od_config.diffusion_compile_backend == "auto":
+            logger.info(
+                "NPU diffusion compilation is opt-in; select diffusion_compile_backend='mindiesd' "
+                "to enable experimental Qwen-Image compilation."
+            )
+            return None
+        if od_config.diffusion_compile_backend != "mindiesd":
+            raise ValueError("NPU diffusion compilation requires diffusion_compile_backend='mindiesd'.")
+
+        # Limit the experimental path without changing defaults on other platforms.
+        if od_config.model_class_name != "QwenImagePipeline":
+            raise ValueError("MindIE-SD diffusion compilation currently supports QwenImagePipeline only.")
+        if od_config.diffusion_compile_granularity != "regional" or od_config.diffusion_compile_dynamic:
+            raise ValueError(
+                "MindIE-SD requires diffusion_compile_granularity='regional' and diffusion_compile_dynamic=False."
+            )
+        if od_config.dtype != torch.bfloat16 or od_config.quantization_config is not None:
+            raise ValueError("MindIE-SD diffusion compilation currently requires unquantized BF16 weights.")
+        parallel_config = od_config.parallel_config
+        if (
+            parallel_config.world_size != 1
+            or parallel_config.vae_patch_parallel_size != 1
+            or parallel_config.text_encoder_tp_size != 1
+            or parallel_config.use_hsdp
+            or parallel_config.enable_expert_parallel
+        ):
+            raise ValueError("MindIE-SD diffusion compilation currently requires a single NPU without HSDP or EP.")
+        if (
+            od_config.enable_cpu_offload
+            or od_config.enable_layerwise_offload
+            or od_config.enable_distributed_layerwise_offload
+        ):
+            raise ValueError("MindIE-SD diffusion compilation does not yet support CPU or layerwise offload.")
+        if od_config.cache_backend not in (None, "none"):
+            raise ValueError("MindIE-SD diffusion compilation currently requires cache_backend='none'.")
+        if od_config.lora_path or od_config.enable_sleep_mode:
+            raise ValueError("MindIE-SD diffusion compilation does not yet support LoRA or sleep mode.")
+
+        # Import before model loading: MindIE-SD registers CANN custom ops, whose
+        # registry may be snapshotted by the first custom op during weight load.
+        # The backend remains worker-local and is never stored in od_config.
+        try:
+            from mindiesd.compilation import CompilationConfig, MindieSDBackend
+        except (ImportError, OSError) as exc:
+            raise RuntimeError(
+                "MindIE-SD diffusion compilation was requested, but mindiesd.compilation could not be imported. "
+                "Install a MindIE-SD build compatible with PyTorch, torch_npu and CANN, "
+                "or use enforce_eager=True."
+            ) from exc
+
+        # Do not silently override process-global MindIE-SD settings.
+        for flag in ("aclgraph_only", "aclgraph_with_compile"):
+            if not hasattr(CompilationConfig, flag):
+                raise RuntimeError(f"Unsupported MindIE-SD compilation API: CompilationConfig.{flag} is missing.")
+            if getattr(CompilationConfig, flag):
+                raise ValueError(
+                    f"Experimental MindIE-SD diffusion compilation requires CompilationConfig.{flag}=False."
+                )
+        try:
+            backend = MindieSDBackend()
+        except Exception as exc:
+            raise RuntimeError("Failed to initialize the requested MindIE-SD diffusion compile backend.") from exc
+        logger.info(
+            "Selected experimental MindIE-SD diffusion compile backend (ACLGraph disabled); "
+            "actual compilation is deferred until the first forward."
+        )
+        return backend
 
     @classmethod
     def get_torch_device(cls, local_rank: int | None = None) -> torch.device:

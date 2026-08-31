@@ -726,6 +726,7 @@ class OmniDiffusionConfig:
     enforce_eager: bool = False
     # Controls the generic compilation path used when a pipeline does not
     # provide its own setup_compile() implementation.
+    diffusion_compile_backend: str = "auto"
     diffusion_compile_granularity: str = "regional"
     diffusion_compile_dynamic: bool = True
 
@@ -925,6 +926,11 @@ class OmniDiffusionConfig:
         )
 
     def __post_init__(self):
+        if self.diffusion_compile_backend not in {"auto", "inductor", "mindiesd"}:
+            raise ValueError(
+                "diffusion_compile_backend must be 'auto', 'inductor', or 'mindiesd', "
+                f"got {self.diffusion_compile_backend!r}"
+            )
         if self.diffusion_compile_granularity not in {"regional", "full"}:
             raise ValueError(
                 "diffusion_compile_granularity must be 'regional' or 'full', "

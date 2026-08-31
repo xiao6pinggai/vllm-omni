@@ -1038,6 +1038,9 @@ class AsyncOmniEngine:
             "dlo_use_allgather": kwargs.get("dlo_use_allgather", True),
             "dlo_resident_layers": kwargs.get("dlo_resident_layers", 0),
             "enforce_eager": False if kwargs.get("enforce_eager") is None else kwargs.get("enforce_eager"),
+            "diffusion_compile_backend": (
+                "auto" if kwargs.get("diffusion_compile_backend") is None else kwargs["diffusion_compile_backend"]
+            ),
             "diffusion_compile_granularity": (
                 "regional"
                 if kwargs.get("diffusion_compile_granularity") is None

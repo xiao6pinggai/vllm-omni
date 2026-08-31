@@ -513,22 +513,29 @@ class TestDiffusionCompileConfig:
     def test_config_defaults_to_dynamic_regional_compile(self) -> None:
         config = OmniDiffusionConfig(model="test")
 
+        assert config.diffusion_compile_backend == "auto"
         assert config.diffusion_compile_granularity == "regional"
         assert config.diffusion_compile_dynamic is True
 
     def test_from_kwargs_preserves_compile_controls(self) -> None:
         config = OmniDiffusionConfig.from_kwargs(
             model="test",
+            diffusion_compile_backend="mindiesd",
             diffusion_compile_granularity="full",
             diffusion_compile_dynamic=False,
         )
 
+        assert config.diffusion_compile_backend == "mindiesd"
         assert config.diffusion_compile_granularity == "full"
         assert config.diffusion_compile_dynamic is False
 
     def test_config_rejects_invalid_compile_granularity(self) -> None:
         with pytest.raises(ValueError, match="diffusion_compile_granularity"):
             OmniDiffusionConfig(model="test", diffusion_compile_granularity="block")
+
+    def test_config_rejects_invalid_compile_backend(self) -> None:
+        with pytest.raises(ValueError, match="diffusion_compile_backend"):
+            OmniDiffusionConfig(model="test", diffusion_compile_backend="invalid")
 
     def test_config_rejects_non_boolean_compile_dynamic(self) -> None:
         with pytest.raises(TypeError, match="diffusion_compile_dynamic"):

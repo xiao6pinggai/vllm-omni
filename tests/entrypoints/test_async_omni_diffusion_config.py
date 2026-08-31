@@ -346,7 +346,7 @@ def test_serve_cli_forwards_distributed_offload_residency():
 
 
 def test_serve_cli_accepts_diffusion_compile_controls():
-    """Ensure both compile controls reach the diffusion stage."""
+    """Ensure compile controls reach the diffusion stage."""
     parser = TrackingArgumentParser()
     subparsers = parser.add_subparsers(dest="command")
     OmniServeCommand().subparser_init(subparsers)
@@ -358,6 +358,8 @@ def test_serve_cli_accepts_diffusion_compile_controls():
             "--omni",
             "--diffusion-compile-granularity",
             "full",
+            "--diffusion-compile-backend",
+            "inductor",
             "--no-diffusion-compile-dynamic",
         ]
     )
@@ -366,8 +368,10 @@ def test_serve_cli_accepts_diffusion_compile_controls():
     stage_cfg = AsyncOmniEngine._create_default_diffusion_stage_cfg(explicit_kwargs)[0]
 
     assert args.diffusion_compile_granularity == "full"
+    assert args.diffusion_compile_backend == "inductor"
     assert args.diffusion_compile_dynamic is False
     assert stage_cfg["engine_args"]["diffusion_compile_granularity"] == "full"
+    assert stage_cfg["engine_args"]["diffusion_compile_backend"] == "inductor"
     assert stage_cfg["engine_args"]["diffusion_compile_dynamic"] is False
 
 

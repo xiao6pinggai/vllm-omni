@@ -211,11 +211,110 @@ def _make_compile_runner(
     runner = object.__new__(DiffusionModelRunner)
     runner.pipeline = SimpleNamespace(transformer=model or SimpleNamespace())
     runner.od_config = SimpleNamespace(
+        enforce_eager=False,
+        diffusion_compile_backend="auto",
         diffusion_compile_granularity=compile_granularity,
         diffusion_compile_dynamic=compile_dynamic,
         parallel_config=SimpleNamespace(use_hsdp=use_hsdp),
     )
     return runner
+
+
+@pytest.mark.core_model
+@pytest.mark.cpu
+@pytest.mark.parametrize("granularity", ["regional", "full"])
+def test_compile_transformer_passes_explicit_backend(monkeypatch, granularity):
+    model = _CompileTrackingModel()
+    runner = _make_compile_runner(model, compile_granularity=granularity, compile_dynamic=False)
+    backend = object()
+    calls = []
+    monkeypatch.setattr(model_runner_module, "regionally_compile", lambda target, **kw: calls.append(kw) or target)
+    runner._compile_transformer("transformer", backend=backend)
+    expected = {"backend": backend, "dynamic": False}
+    assert (calls if granularity == "regional" else [model.compile_calls[0][1]]) == [expected]
+
+
+@pytest.mark.core_model
+@pytest.mark.cpu
+def test_compile_explicit_backend_setup_failure_is_not_silenced(monkeypatch):
+    runner = _make_compile_runner()
+    runner.od_config.diffusion_compile_backend = "mindiesd"
+
+    def fail(*args, **kwargs):
+        raise RuntimeError("backend setup failed")
+
+    monkeypatch.setattr(model_runner_module, "regionally_compile", fail)
+    with pytest.raises(RuntimeError, match="Requested diffusion compile setup failed") as error:
+        runner._compile_transformer("transformer", backend=object())
+    assert str(error.value.__cause__) == "backend setup failed"
+
+
+@pytest.mark.core_model
+@pytest.mark.cpu
+@pytest.mark.parametrize("eager", [False, True])
+def test_compile_backend_resolution_precedes_model_runtime(monkeypatch, eager):
+    runner = _make_compile_runner()
+    runner.od_config.enforce_eager = eager
+    runner.vllm_config = object()
+    runner.device = torch.device("cpu")
+    events = []
+
+    def resolve(config):
+        events.append("backend")
+        return object()
+
+    def stop_before_load(**kwargs):
+        events.append("runtime")
+        raise RuntimeError("stop before loading weights")
+
+    monkeypatch.setattr(
+        model_runner_module,
+        "current_omni_platform",
+        SimpleNamespace(get_diffusion_compile_backend=resolve, init_diffusion_model_runner_runtime=stop_before_load),
+    )
+    with pytest.raises(RuntimeError, match="stop before loading weights"):
+        runner.load_model()
+    assert events == (["runtime"] if eager else ["backend", "runtime"])
+
+
+@pytest.mark.core_model
+@pytest.mark.cpu
+def test_compile_model_uses_declared_transformers(monkeypatch):
+    runner = _make_compile_runner()
+    runner.pipeline._dit_modules = ["transformer"]
+    calls = []
+    monkeypatch.setattr(runner, "_compile_transformer", lambda name, **kw: calls.append((name, kw)))
+    backend = object()
+    runner._compile_model(backend)
+    assert calls == [("transformer", {"backend": backend})]
+    runner.od_config.enforce_eager = True
+    runner._compile_model(backend)
+    assert len(calls) == 1
+
+
+@pytest.mark.core_model
+@pytest.mark.cpu
+def test_compile_model_skips_unavailable_backend(monkeypatch):
+    runner = _make_compile_runner()
+    monkeypatch.setattr(
+        model_runner_module, "current_omni_platform", SimpleNamespace(get_torch_device=lambda: torch.device("cpu"))
+    )
+    monkeypatch.setattr(runner, "_compile_transformer", lambda *a, **kw: pytest.fail("unexpected compilation"))
+    runner._compile_model(None)
+
+
+@pytest.mark.core_model
+@pytest.mark.cpu
+def test_compile_custom_setup_keeps_auto_and_rejects_explicit_backend():
+    runner = _make_compile_runner()
+    calls = []
+    runner.pipeline.setup_compile = lambda: calls.append("setup")
+    runner._compile_model("inductor")
+    assert calls == ["setup"]
+    runner.od_config.diffusion_compile_backend = "mindiesd"
+    with pytest.raises(ValueError, match="pipeline.setup_compile"):
+        runner._compile_model(object())
+    assert calls == ["setup"]
 
 
 @pytest.mark.core_model

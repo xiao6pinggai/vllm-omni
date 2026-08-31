@@ -461,6 +461,16 @@ class OmniServeCommand(CLISubcommand):
             help="Scale for a startup PEFT LoRA. Distilled LoRAs are fused at their checkpoint scale.",
         )
         omni_config_group.add_argument(
+            "--diffusion-compile-backend",
+            choices=["auto", "inductor", "mindiesd"],
+            default=None,
+            help=(
+                "Backend for generic diffusion compilation. 'auto' preserves platform defaults; "
+                "'mindiesd' opts into experimental NPU Qwen-Image regional compilation "
+                "and requires --no-diffusion-compile-dynamic."
+            ),
+        )
+        omni_config_group.add_argument(
             "--diffusion-compile-granularity",
             choices=["regional", "full"],
             default=None,

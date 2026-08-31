@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
 
+from collections.abc import Callable
 from contextlib import nullcontext
 from enum import Enum
 from typing import Any
@@ -154,6 +155,22 @@ class OmniPlatform(Platform):
     def supports_torch_inductor(cls) -> bool:
         """Check if the platform supports torch.compile with inductor backend."""
         raise NotImplementedError
+
+    @classmethod
+    def get_diffusion_compile_backend(cls, od_config: Any) -> str | Callable | None:
+        """Resolve a diffusion backend inside the worker before model loading.
+
+        None means compilation is unavailable, not the default torch backend.
+        Keep this separate from vLLM's autoregressive get_compile_backend().
+        """
+        requested = od_config.diffusion_compile_backend
+        if requested not in ("auto", "inductor"):
+            raise ValueError(f"Diffusion compile backend {requested!r} is not supported on {cls._omni_enum.value}.")
+        if cls.supports_torch_inductor():
+            return "inductor"
+        if requested != "auto":
+            raise ValueError(f"Inductor diffusion compilation is not supported on {cls._omni_enum.value}.")
+        return None
 
     @classmethod
     def supports_talker_mtp_graph_capture(cls) -> bool:
