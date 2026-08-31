@@ -216,45 +216,422 @@ offload、并行、LoRA、sleep 或缓存。模型及编译工作区需要能放
 - 署名：Codex（本地开发 agent，OpenAI）；时间：2026-08-31 14:27:21 +08:00。
 
 ### 2026-08-31 22:45:25 +08:00 | opencode（NPU 验证 agent，本机）
+[root@vllm-omni-lhg lhg]# export GLOO_SOCKET_IFNAME=lo
 
-- 输入代码提交：Omni `26abc822`（Codex 初版提交），运行的是本仓库 checkout。
-- 环境与设备：Linux 服务器 `vllm-omni-lhg`；NPU 单卡（ASCEND_RT_VISIBLE_DEVICES=0）；vLLM 0.27.1+empty、Python 3.12.13。
-- 本次目标：服务拉起冒烟测试（启用 mindiesd backend 的 compile 服务）。
-- 执行命令：
+ASCEND_RT_VISIBLE_DEVICES=0 \
+python3 -u -m vllm_omni.entrypoints.cli.main serve \
+  /home/DiffusionWeights/Qwen-Image/ \
+  --host 127.0.0.1 \
+  --port 33547 \
+  --omni \
+  --trust-remote-code \
+  --disable-log-stats \
+  --tensor-parallel-size 1 \
+  --diffusion-compile-backend mindiesd \
+  --diffusion-compile-granularity regional \
+  --no-diffusion-compile-dynamic --cache-backend none
+[W831 22:40:35.018378730 FunctionLoader.cpp:48] Warning: LD_PRELOAD detected, FunctionLoader prefers RTLD_DEFAULT for symbol resolution. (function operator())
+INFO 08-31 22:40:39 [__init__.py:52] Available plugins for group vllm.platform_plugins:
+INFO 08-31 22:40:39 [__init__.py:54] - ascend -> vllm_ascend:register
+INFO 08-31 22:40:39 [__init__.py:57] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+INFO 08-31 22:40:39 [__init__.py:237] Platform plugin ascend is activated
+INFO 08-31 22:40:39 [platform.py:70] Breakable CUDAGraph on Ascend is opt-in; using VLLM_USE_BREAKABLE_CUDAGRAPH=0.
+INFO 08-31 22:40:45 [patch.py:252] NVFP4 W4A4 weight_scale NaN-clamp: installed.
+INFO 08-31 22:40:45 [patch.py:489] inductor factorable-divisibility patch: skipped (upstream already proves it).
+INFO 08-31 22:40:45 [patch.py:568] [cumem-cuda] CuMemAllocator._python_free_callback patched: asleep guard extended to all platforms.
+2026-08-31 22:40:48,516 - 2237126 - ServiceProfiler - INFO - VLLM_USE_V1 not set, auto-detected via vLLM 0.27.1+empty: default 1
+INFO 08-31 22:40:48 [__init__.py:112] Registered model loader `<class 'vllm_ascend.model_loader.netloader.netloader.ModelNetLoaderElastic'>` with load format `netloader`
+INFO 08-31 22:40:48 [__init__.py:112] Registered model loader `<class 'vllm_ascend.model_loader.rfork.rfork_loader.RForkModelLoader'>` with load format `rfork`
+INFO 08-31 22:40:48 [serve.py:194] Detected diffusion model: /home/DiffusionWeights/Qwen-Image/
+INFO 08-31 22:40:48 [logo.py:52]        █     █     █▄   ▄█       ▄▀▀▀▀▄ █▄   ▄█ █▄    █ ▀█▀ 
+INFO 08-31 22:40:48 [logo.py:52]  ▄▄ ▄█ █     █     █ ▀▄▀ █  ▄▄▄  █    █ █ ▀▄▀ █ █ ▀▄  █  █  
+INFO 08-31 22:40:48 [logo.py:52]   █▄█▀ █     █     █     █       █    █ █     █ █   ▀▄█  █  
+INFO 08-31 22:40:48 [logo.py:52]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀        ▀▀▀▀  ▀     ▀ ▀     ▀ ▀▀▀ 
+INFO 08-31 22:40:48 [logo.py:52] 
+(APIServer pid=2237126) INFO 08-31 22:40:48 [api_utils.py:345] vLLM server version 0.27.1, serving model /home/DiffusionWeights/Qwen-Image/
+(APIServer pid=2237126) INFO 08-31 22:40:48 [api_utils.py:273] non-default args: {'model_tag': '/home/DiffusionWeights/Qwen-Image/', 'host': '127.0.0.1', 'port': 33547, 'model': '/home/DiffusionWeights/Qwen-Image/', 'trust_remote_code': True, 'disable_log_stats': True}
+(APIServer pid=2237126) INFO 08-31 22:40:48 [omni_base.py:186] [AsyncOmni] Initializing with model /home/DiffusionWeights/Qwen-Image/
+(APIServer pid=2237126) INFO 08-31 22:40:48 [async_omni_engine.py:176] [AsyncOmniEngine] Initializing with model /home/DiffusionWeights/Qwen-Image/
+(APIServer pid=2237126) INFO 08-31 22:40:48 [async_omni_engine.py:275] [AsyncOmniEngine] Launching Orchestrator thread with 1 stages
+(APIServer pid=2237126) INFO 08-31 22:40:48 [stage_utils.py:167] Stage 0 logical-to-physical device mapping: 0->0
+(APIServer pid=2237126) WARNING 08-31 22:40:48 [ring_globals.py:73] FlashInfer is unavailable; falling back to other attention backends. Reason: No module named 'flashinfer'
+(APIServer pid=2237126) INFO 08-31 22:40:49 [multiproc_executor.py:294] Starting server...
+[W831 22:40:50.493774480 FunctionLoader.cpp:48] Warning: LD_PRELOAD detected, FunctionLoader prefers RTLD_DEFAULT for symbol resolution. (function operator())
+INFO 08-31 22:40:55 [__init__.py:52] Available plugins for group vllm.platform_plugins:
+INFO 08-31 22:40:55 [__init__.py:54] - ascend -> vllm_ascend:register
+INFO 08-31 22:40:55 [__init__.py:57] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+INFO 08-31 22:40:55 [__init__.py:237] Platform plugin ascend is activated
+INFO 08-31 22:40:55 [platform.py:70] Breakable CUDAGraph on Ascend is opt-in; using VLLM_USE_BREAKABLE_CUDAGRAPH=0.
+INFO 08-31 22:41:00 [patch.py:252] NVFP4 W4A4 weight_scale NaN-clamp: installed.
+INFO 08-31 22:41:00 [patch.py:489] inductor factorable-divisibility patch: skipped (upstream already proves it).
+INFO 08-31 22:41:00 [patch.py:568] [cumem-cuda] CuMemAllocator._python_free_callback patched: asleep guard extended to all platforms.
+2026-08-31 22:41:03,614 - 2237376 - ServiceProfiler - INFO - VLLM_USE_V1 not set, auto-detected via vLLM 0.27.1+empty: default 1
+INFO 08-31 22:41:03 [__init__.py:112] Registered model loader `<class 'vllm_ascend.model_loader.netloader.netloader.ModelNetLoaderElastic'>` with load format `netloader`
+INFO 08-31 22:41:03 [__init__.py:112] Registered model loader `<class 'vllm_ascend.model_loader.rfork.rfork_loader.RForkModelLoader'>` with load format `rfork`
+INFO 08-31 22:41:03 [diffusion_worker.py:843] Worker 0 created result MessageQueue
+INFO 08-31 22:41:13 [scheduler.py:242] Chunked prefill is enabled with max_num_batched_tokens=2048.
+INFO 08-31 22:41:13 [kernel.py:306] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'])
+WARNING 08-31 22:41:13 [platform.py:430] Model config is missing. Skipping Ascend-specific config updates.
+INFO 08-31 22:41:13 [compilation.py:329] Enabled custom fusions: norm_quant, act_quant
+INFO 08-31 22:41:13 [diffusion_worker.py:306] Final IR op priority after setting vLLM-Omni overrides: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'])
+INFO 08-31 22:41:13 [ascend_config.py:158] Dynamic EPLB is False
+INFO 08-31 22:41:13 [ascend_config.py:159] The number of redundant experts is 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+INFO 08-31 22:41:13 [diffusion_worker.py:318] Worker 0: Initialized device and distributed environment.
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+INFO 08-31 22:41:13 [parallel_state.py:646] Building SP subgroups from explicit sp_group_ranks (sp_size=1, ulysses=1, ring=1, use_ulysses_low=True).
+INFO 08-31 22:41:13 [parallel_state.py:688] SP group details for rank 0: sp_group=[0], ulysses_group=[0], ring_group=[0]
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+Process DiffusionWorker-0:
+Traceback (most recent call last):
+  File "/home/lhg/code/vllm-omni/vllm_omni/platforms/npu/platform.py", line 218, in get_diffusion_compile_backend
+    from mindiesd.compilation import CompilationConfig, MindieSDBackend
+ModuleNotFoundError: No module named 'mindiesd'
 
-  ```bash
-  export GLOO_SOCKET_IFNAME=lo
+The above exception was the direct cause of the following exception:
 
-  ASCEND_RT_VISIBLE_DEVICES=0 \
-  python3 -u -m vllm_omni.entrypoints.cli.main serve \
-    /home/DiffusionWeights/Qwen-Image/ \
-    --host 127.0.0.1 \
-    --port 33547 \
-    --omni \
-    --trust-remote-code \
-    --disable-log-stats \
-    --tensor-parallel-size 1 \
-    --diffusion-compile-backend mindiesd \
-    --diffusion-compile-granularity regional \
-    --no-diffusion-compile-dynamic --cache-backend none
-  ```
-
-- 观察结果与日志路径：服务在 worker 加载阶段按设计清晰失败并退出。worker 内
-  `NPUOmniPlatform.get_diffusion_compile_backend()`（`vllm_omni/platforms/npu/platform.py:218`）
-  `from mindiesd.compilation import ...` 抛出
-  `ModuleNotFoundError: No module named 'mindiesd'`，随后按显式选择语义抛出
-  RuntimeError（提示安装 MindIE-SD 或使用 enforce_eager=True）；APIServer
-  正常收尾关闭，未出现误回退 eager。CLI → config → worker → platform 的透传链路
-  已打通，失败点是环境缺少 MindIE-SD 依赖。完整堆栈见现场终端输出（22:40–22:41）。
-- 推测 / 尚未验证：未进入权重加载与首次 forward 编译；真实 backend 图处理、
-  数值正确性、显存与性能均未验证。
-- 本次修改文件及提交：仅追加本文档记录，无代码改动；提交见本次 commit。
-- 需要另一侧处理：请 Codex 更新默认启动命令。交接文档第 5.3 节与
-  `docs/user_guide/diffusion/regional_compilation.md` 中
-  `vllm serve Qwen/Qwen-Image ...` 的示例与本机实际可用的启动方式不一致，
-  建议改为本机验证过的 `python3 -u -m vllm_omni.entrypoints.cli.main serve \
-  /home/DiffusionWeights/Qwen-Image/`（含 `export GLOO_SOCKET_IFNAME=lo`、
-  `--trust-remote-code`、`--disable-log-stats`、`--tensor-parallel-size 1`）。
-- 下一步：安装/确认 MindIE-SD wheel 后重新拉起 compile 服务；先跑 eager
-  对照（同一命令加 `--enforce-eager`）。
-- 署名：opencode（NPU 验证 agent，本机）；时间：2026-08-31 22:45:25 +08:00。
+Traceback (most recent call last):
+  File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/worker/diffusion_worker.py", line 1238, in worker_main
+    worker_proc = WorkerProc(
+                  ^^^^^^^^^^^
+  File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/worker/diffusion_worker.py", line 848, in __init__
+    self.worker = self._create_worker(gpu_id, od_config, worker_extension_cls, custom_pipeline_args)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/worker/diffusion_worker.py", line 876, in _create_worker
+    wrapper = WorkerWrapperBase(
+              ^^^^^^^^^^^^^^^^^^
+  File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/worker/diffusion_worker.py", line 1310, in __init__
+    self.worker = worker_class(
+                  ^^^^^^^^^^^^^
+  File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/worker/diffusion_worker.py", line 259, in __init__
+    self.load_model(load_format=self.od_config.diffusion_load_format)
+  File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/worker/diffusion_worker.py", line 368, in load_model
+    self.model_runner.load_model(
+  File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/worker/diffusion_model_runner.py", line 268, in load_model
+    else current_omni_platform.get_diffusion_compile_backend(self.od_config)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/lhg/code/vllm-omni/vllm_omni/platforms/npu/platform.py", line 220, in get_diffusion_compile_backend
+    raise RuntimeError(
+RuntimeError: MindIE-SD diffusion compilation was requested, but mindiesd.compilation could not be imported. Install a MindIE-SD build compatible with PyTorch, torch_npu and CANN, or use enforce_eager=True.
+(APIServer pid=2237126) ERROR 08-31 22:41:17 [multiproc_executor.py:338] Rank 0 scheduler is dead. Please check if there are relevant logs.
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [multiproc_executor.py:340] Exit code: 1
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253] [StageRuntime] Stage initialization failed; shutting down 0 initialized client(s)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253] Traceback (most recent call last):
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 240, in initialize
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     initialized_clients = self._initialize_stage_replicas(stage_plans, self._stage_init_timeout)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 507, in _initialize_stage_replicas
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     raise primary_exc
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 468, in _init_group
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     client = self._initialize_replica(
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]              ^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 532, in _initialize_replica
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     return self._initialize_local_diffusion_replica(plan, stage_init_timeout)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 653, in _initialize_local_diffusion_replica
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     client, resources = launch_diffusion_stage_replica(
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_engine_startup.py", line 1546, in launch_diffusion_stage_replica
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     client = initialize_diffusion_stage(
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_init_utils.py", line 1412, in initialize_diffusion_stage
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     return create_diffusion_client(model, od_config, metadata, stage_init_timeout, batch_size, use_inline)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/stage_diffusion_client.py", line 55, in create_diffusion_client
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     return InlineStageDiffusionClient(model, od_config, metadata, batch_size=batch_size)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/inline_stage_diffusion_client.py", line 63, in __init__
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     self._engine = DiffusionEngine.make_engine(self.od_config)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/diffusion_engine.py", line 689, in make_engine
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     engine = engine_class(config, scheduler=scheduler)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/diffusion_engine.py", line 190, in __init__
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     self._init_executor(od_config)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/diffusion_engine.py", line 239, in _init_executor
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     self.executor = executor_class(od_config)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/executor/abstract.py", line 64, in __init__
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     self._init_executor()
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/executor/multiproc_executor.py", line 111, in _init_executor
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     processes, result_handles = self._launch_workers(broadcast_handle, self.wake_events)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/executor/multiproc_executor.py", line 336, in _launch_workers
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     data = reader.recv()
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]            ^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/connection.py", line 250, in recv
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     buf = self._recv_bytes()
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]           ^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/connection.py", line 430, in _recv_bytes
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     buf = self._recv(4)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]           ^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]   File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/connection.py", line 399, in _recv
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253]     raise EOFError
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [stage_runtime.py:253] EOFError
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449] [AsyncOmniEngine] Orchestrator thread crashed
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449] Traceback (most recent call last):
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/async_omni_engine.py", line 443, in _bootstrap_orchestrator
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     loop.run_until_complete(_run_orchestrator())
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/usr/local/python3.12.13/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     return future.result()
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]            ^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/async_omni_engine.py", line 401, in _run_orchestrator
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     self._initialize_stages(stage_init_timeout)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/async_omni_engine.py", line 351, in _initialize_stages
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     self._runtime.initialize()
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 259, in initialize
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     raise exc
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 240, in initialize
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     initialized_clients = self._initialize_stage_replicas(stage_plans, self._stage_init_timeout)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 507, in _initialize_stage_replicas
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     raise primary_exc
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 468, in _init_group
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     client = self._initialize_replica(
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]              ^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 532, in _initialize_replica
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     return self._initialize_local_diffusion_replica(plan, stage_init_timeout)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 653, in _initialize_local_diffusion_replica
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     client, resources = launch_diffusion_stage_replica(
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_engine_startup.py", line 1546, in launch_diffusion_stage_replica
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     client = initialize_diffusion_stage(
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_init_utils.py", line 1412, in initialize_diffusion_stage
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     return create_diffusion_client(model, od_config, metadata, stage_init_timeout, batch_size, use_inline)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/stage_diffusion_client.py", line 55, in create_diffusion_client
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     return InlineStageDiffusionClient(model, od_config, metadata, batch_size=batch_size)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/inline_stage_diffusion_client.py", line 63, in __init__
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     self._engine = DiffusionEngine.make_engine(self.od_config)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/diffusion_engine.py", line 689, in make_engine
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     engine = engine_class(config, scheduler=scheduler)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/diffusion_engine.py", line 190, in __init__
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     self._init_executor(od_config)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/diffusion_engine.py", line 239, in _init_executor
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     self.executor = executor_class(od_config)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/executor/abstract.py", line 64, in __init__
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     self._init_executor()
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/executor/multiproc_executor.py", line 111, in _init_executor
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     processes, result_handles = self._launch_workers(broadcast_handle, self.wake_events)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/executor/multiproc_executor.py", line 336, in _launch_workers
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     data = reader.recv()
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]            ^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/connection.py", line 250, in recv
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     buf = self._recv_bytes()
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]           ^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/connection.py", line 430, in _recv_bytes
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     buf = self._recv(4)
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]           ^^^^^^^^^^^^^
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]   File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/connection.py", line 399, in _recv
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449]     raise EOFError
+(APIServer pid=2237126) ERROR 08-31 22:41:18 [async_omni_engine.py:449] EOFError
+(APIServer pid=2237126) INFO 08-31 22:41:18 [async_omni_engine.py:1859] [AsyncOmniEngine] Shutting down Orchestrator
+(APIServer pid=2237126) Exception in thread orchestrator:
+(APIServer pid=2237126) Traceback (most recent call last):
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/threading.py", line 1075, in _bootstrap_inner
+(APIServer pid=2237126)     self.run()
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/threading.py", line 1012, in run
+(APIServer pid=2237126)     self._target(*self._args, **self._kwargs)
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/async_omni_engine.py", line 443, in _bootstrap_orchestrator
+(APIServer pid=2237126)     loop.run_until_complete(_run_orchestrator())
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+(APIServer pid=2237126)     return future.result()
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/async_omni_engine.py", line 401, in _run_orchestrator
+(APIServer pid=2237126)     self._initialize_stages(stage_init_timeout)
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/async_omni_engine.py", line 351, in _initialize_stages
+(APIServer pid=2237126)     self._runtime.initialize()
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 259, in initialize
+(APIServer pid=2237126)     raise exc
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 240, in initialize
+(APIServer pid=2237126)     initialized_clients = self._initialize_stage_replicas(stage_plans, self._stage_init_timeout)
+(APIServer pid=2237126)                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 507, in _initialize_stage_replicas
+(APIServer pid=2237126)     raise primary_exc
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 468, in _init_group
+(APIServer pid=2237126)     client = self._initialize_replica(
+(APIServer pid=2237126)              ^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 532, in _initialize_replica
+(APIServer pid=2237126)     return self._initialize_local_diffusion_replica(plan, stage_init_timeout)
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 653, in _initialize_local_diffusion_replica
+(APIServer pid=2237126)     client, resources = launch_diffusion_stage_replica(
+(APIServer pid=2237126)                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_engine_startup.py", line 1546, in launch_diffusion_stage_replica
+(APIServer pid=2237126)     client = initialize_diffusion_stage(
+(APIServer pid=2237126)              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_init_utils.py", line 1412, in initialize_diffusion_stage
+(APIServer pid=2237126)     return create_diffusion_client(model, od_config, metadata, stage_init_timeout, batch_size, use_inline)
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/stage_diffusion_client.py", line 55, in create_diffusion_client
+(APIServer pid=2237126)     return InlineStageDiffusionClient(model, od_config, metadata, batch_size=batch_size)
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/inline_stage_diffusion_client.py", line 63, in __init__
+(APIServer pid=2237126)     self._engine = DiffusionEngine.make_engine(self.od_config)
+(APIServer pid=2237126)                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/diffusion_engine.py", line 689, in make_engine
+(APIServer pid=2237126)     engine = engine_class(config, scheduler=scheduler)
+(APIServer pid=2237126)              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/diffusion_engine.py", line 190, in __init__
+(APIServer pid=2237126)     self._init_executor(od_config)
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/diffusion_engine.py", line 239, in _init_executor
+(APIServer pid=2237126)     self.executor = executor_class(od_config)
+(APIServer pid=2237126)                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/executor/abstract.py", line 64, in __init__
+(APIServer pid=2237126)     self._init_executor()
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/executor/multiproc_executor.py", line 111, in _init_executor
+(APIServer pid=2237126)     processes, result_handles = self._launch_workers(broadcast_handle, self.wake_events)
+(APIServer pid=2237126)                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/executor/multiproc_executor.py", line 336, in _launch_workers
+(APIServer pid=2237126)     data = reader.recv()
+(APIServer pid=2237126)            ^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/connection.py", line 250, in recv
+(APIServer pid=2237126)     buf = self._recv_bytes()
+(APIServer pid=2237126)           ^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/connection.py", line 430, in _recv_bytes
+(APIServer pid=2237126)     buf = self._recv(4)
+(APIServer pid=2237126)           ^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/connection.py", line 399, in _recv
+(APIServer pid=2237126)     raise EOFError
+(APIServer pid=2237126) EOFError
+(APIServer pid=2237126) Traceback (most recent call last):
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/threading.py", line 1075, in _bootstrap_inner
+(APIServer pid=2237126)     self.run()
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/threading.py", line 1012, in run
+(APIServer pid=2237126)     self._target(*self._args, **self._kwargs)
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/async_omni_engine.py", line 443, in _bootstrap_orchestrator
+(APIServer pid=2237126)     loop.run_until_complete(_run_orchestrator())
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+(APIServer pid=2237126)     return future.result()
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/async_omni_engine.py", line 401, in _run_orchestrator
+(APIServer pid=2237126)     self._initialize_stages(stage_init_timeout)
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/async_omni_engine.py", line 351, in _initialize_stages
+(APIServer pid=2237126)     self._runtime.initialize()
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 259, in initialize
+(APIServer pid=2237126)     raise exc
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 240, in initialize
+(APIServer pid=2237126)     initialized_clients = self._initialize_stage_replicas(stage_plans, self._stage_init_timeout)
+(APIServer pid=2237126)                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 507, in _initialize_stage_replicas
+(APIServer pid=2237126)     raise primary_exc
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 468, in _init_group
+(APIServer pid=2237126)     client = self._initialize_replica(
+(APIServer pid=2237126)              ^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 532, in _initialize_replica
+(APIServer pid=2237126)     return self._initialize_local_diffusion_replica(plan, stage_init_timeout)
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_runtime.py", line 653, in _initialize_local_diffusion_replica
+(APIServer pid=2237126)     client, resources = launch_diffusion_stage_replica(
+(APIServer pid=2237126)                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_engine_startup.py", line 1546, in launch_diffusion_stage_replica
+(APIServer pid=2237126)     client = initialize_diffusion_stage(
+(APIServer pid=2237126)              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/stage_init_utils.py", line 1412, in initialize_diffusion_stage
+(APIServer pid=2237126)     return create_diffusion_client(model, od_config, metadata, stage_init_timeout, batch_size, use_inline)
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/stage_diffusion_client.py", line 55, in create_diffusion_client
+(APIServer pid=2237126)     return InlineStageDiffusionClient(model, od_config, metadata, batch_size=batch_size)
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/inline_stage_diffusion_client.py", line 63, in __init__
+(APIServer pid=2237126)     self._engine = DiffusionEngine.make_engine(self.od_config)
+(APIServer pid=2237126)                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/diffusion_engine.py", line 689, in make_engine
+(APIServer pid=2237126)     engine = engine_class(config, scheduler=scheduler)
+(APIServer pid=2237126)              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/diffusion_engine.py", line 190, in __init__
+(APIServer pid=2237126)     self._init_executor(od_config)
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/diffusion_engine.py", line 239, in _init_executor
+(APIServer pid=2237126)     self.executor = executor_class(od_config)
+(APIServer pid=2237126)                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/executor/abstract.py", line 64, in __init__
+(APIServer pid=2237126)     self._init_executor()
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/executor/multiproc_executor.py", line 111, in _init_executor
+(APIServer pid=2237126)     processes, result_handles = self._launch_workers(broadcast_handle, self.wake_events)
+(APIServer pid=2237126)                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/diffusion/executor/multiproc_executor.py", line 336, in _launch_workers
+(APIServer pid=2237126)     data = reader.recv()
+(APIServer pid=2237126)            ^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/connection.py", line 250, in recv
+(APIServer pid=2237126)     buf = self._recv_bytes()
+(APIServer pid=2237126)           ^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/connection.py", line 430, in _recv_bytes
+(APIServer pid=2237126)     buf = self._recv(4)
+(APIServer pid=2237126)           ^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/multiprocessing/connection.py", line 399, in _recv
+(APIServer pid=2237126)     raise EOFError
+(APIServer pid=2237126) EOFError
+(APIServer pid=2237126) 
+(APIServer pid=2237126) The above exception was the direct cause of the following exception:
+(APIServer pid=2237126) 
+(APIServer pid=2237126) Traceback (most recent call last):
+(APIServer pid=2237126)   File "<frozen runpy>", line 198, in _run_module_as_main
+(APIServer pid=2237126)   File "<frozen runpy>", line 88, in _run_code
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/entrypoints/cli/main.py", line 78, in <module>
+(APIServer pid=2237126)     main()
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/entrypoints/cli/main.py", line 72, in main
+(APIServer pid=2237126)     args.dispatch_function(args)
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/entrypoints/cli/serve.py", line 119, in cmd
+(APIServer pid=2237126)     uvloop.run(omni_run_server(args))
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/site-packages/uvloop/__init__.py", line 96, in run
+(APIServer pid=2237126)     return __asyncio.run(
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/asyncio/runners.py", line 195, in run
+(APIServer pid=2237126)     return runner.run(main)
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/asyncio/runners.py", line 118, in run
+(APIServer pid=2237126)     return self._loop.run_until_complete(task)
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/site-packages/uvloop/__init__.py", line 48, in wrapper
+(APIServer pid=2237126)     return await main
+(APIServer pid=2237126)            ^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/entrypoints/openai/api_server.py", line 472, in omni_run_server
+(APIServer pid=2237126)     await omni_run_server_worker(listen_address, sock, args, **uvicorn_kwargs)
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/entrypoints/openai/api_server.py", line 499, in omni_run_server_worker
+(APIServer pid=2237126)     async with build_async_omni(
+(APIServer pid=2237126)                ^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=2237126)     return await anext(self.gen)
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/entrypoints/openai/api_server.py", line 654, in build_async_omni
+(APIServer pid=2237126)     async with build_async_omni_from_stage_config(
+(APIServer pid=2237126)                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=2237126)     return await anext(self.gen)
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/entrypoints/openai/api_server.py", line 720, in build_async_omni_from_stage_config
+(APIServer pid=2237126)     async_omni = AsyncOmni(model=model, **kwargs)
+(APIServer pid=2237126)                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/entrypoints/async_omni.py", line 147, in __init__
+(APIServer pid=2237126)     OmniBase.__init__(self, model=model, **kwargs)
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/entrypoints/omni_base.py", line 192, in __init__
+(APIServer pid=2237126)     self.engine = AsyncOmniEngine(
+(APIServer pid=2237126)                   ^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/async_omni_engine.py", line 290, in __init__
+(APIServer pid=2237126)     self._wait_for_orchestrator_init(startup_future, startup_timeout)
+(APIServer pid=2237126)   File "/home/lhg/code/vllm-omni/vllm_omni/engine/async_omni_engine.py", line 494, in _wait_for_orchestrator_init
+(APIServer pid=2237126)     startup_future.result(
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/concurrent/futures/_base.py", line 456, in result
+(APIServer pid=2237126)     return self.__get_result()
+(APIServer pid=2237126)            ^^^^^^^^^^^^^^^^^^^
+(APIServer pid=2237126)   File "/usr/local/python3.12.13/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+(APIServer pid=2237126)     raise self._exception
+(APIServer pid=2237126) RuntimeError: Orchestrator initialization failed: 
+(APIServer pid=2237126) [ERROR] 2026-08-31-22:41:18 (PID:2237126, Device:-1, RankID:-1) ERR99999 UNKNOWN applicaiton exception
+[root@vllm-omni-lhg lhg]# 
