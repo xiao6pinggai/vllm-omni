@@ -214,3 +214,47 @@ offload、并行、LoRA、sleep 或缓存。模型及编译工作区需要能放
 - 若接口或算子不兼容：追加完整环境、首次失败阶段及堆栈摘要；不要直接删掉配置检查或吞掉异常。
 - 下一步：本地提交并正常推送；服务器收到后执行第 5 节，将结果按第 6 节追加并回传。
 - 署名：Codex（本地开发 agent，OpenAI）；时间：2026-08-31 14:27:21 +08:00。
+
+### 2026-08-31 22:45:25 +08:00 | opencode（NPU 验证 agent，本机）
+
+- 输入代码提交：Omni `26abc822`（Codex 初版提交），运行的是本仓库 checkout。
+- 环境与设备：Linux 服务器 `vllm-omni-lhg`；NPU 单卡（ASCEND_RT_VISIBLE_DEVICES=0）；vLLM 0.27.1+empty、Python 3.12.13。
+- 本次目标：服务拉起冒烟测试（启用 mindiesd backend 的 compile 服务）。
+- 执行命令：
+
+  ```bash
+  export GLOO_SOCKET_IFNAME=lo
+
+  ASCEND_RT_VISIBLE_DEVICES=0 \
+  python3 -u -m vllm_omni.entrypoints.cli.main serve \
+    /home/DiffusionWeights/Qwen-Image/ \
+    --host 127.0.0.1 \
+    --port 33547 \
+    --omni \
+    --trust-remote-code \
+    --disable-log-stats \
+    --tensor-parallel-size 1 \
+    --diffusion-compile-backend mindiesd \
+    --diffusion-compile-granularity regional \
+    --no-diffusion-compile-dynamic --cache-backend none
+  ```
+
+- 观察结果与日志路径：服务在 worker 加载阶段按设计清晰失败并退出。worker 内
+  `NPUOmniPlatform.get_diffusion_compile_backend()`（`vllm_omni/platforms/npu/platform.py:218`）
+  `from mindiesd.compilation import ...` 抛出
+  `ModuleNotFoundError: No module named 'mindiesd'`，随后按显式选择语义抛出
+  RuntimeError（提示安装 MindIE-SD 或使用 enforce_eager=True）；APIServer
+  正常收尾关闭，未出现误回退 eager。CLI → config → worker → platform 的透传链路
+  已打通，失败点是环境缺少 MindIE-SD 依赖。完整堆栈见现场终端输出（22:40–22:41）。
+- 推测 / 尚未验证：未进入权重加载与首次 forward 编译；真实 backend 图处理、
+  数值正确性、显存与性能均未验证。
+- 本次修改文件及提交：仅追加本文档记录，无代码改动；提交见本次 commit。
+- 需要另一侧处理：请 Codex 更新默认启动命令。交接文档第 5.3 节与
+  `docs/user_guide/diffusion/regional_compilation.md` 中
+  `vllm serve Qwen/Qwen-Image ...` 的示例与本机实际可用的启动方式不一致，
+  建议改为本机验证过的 `python3 -u -m vllm_omni.entrypoints.cli.main serve \
+  /home/DiffusionWeights/Qwen-Image/`（含 `export GLOO_SOCKET_IFNAME=lo`、
+  `--trust-remote-code`、`--disable-log-stats`、`--tensor-parallel-size 1`）。
+- 下一步：安装/确认 MindIE-SD wheel 后重新拉起 compile 服务；先跑 eager
+  对照（同一命令加 `--enforce-eager`）。
+- 署名：opencode（NPU 验证 agent，本机）；时间：2026-08-31 22:45:25 +08:00。
