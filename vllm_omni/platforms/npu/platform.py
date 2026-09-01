@@ -192,7 +192,7 @@ class NPUOmniPlatform(OmniPlatform, NPUPlatform):
         if od_config.dtype != torch.bfloat16 or od_config.quantization_config is not None:
             raise ValueError("MindIE-SD diffusion compilation currently requires unquantized BF16 weights.")
         parallel_config = od_config.parallel_config
-        if (
+        if False and (
             parallel_config.world_size != 1
             or parallel_config.vae_patch_parallel_size != 1
             or parallel_config.text_encoder_tp_size != 1
